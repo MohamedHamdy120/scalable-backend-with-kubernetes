@@ -1,0 +1,1 @@
+this is initial readme for the scalable-backend-with-kubernetes project
