@@ -1,7 +1,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace UnitApi.Models;
+namespace UnitsApi.Models;
 
 public class Post
 {
