@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: units-api-service
+spec:
+  type: ClusterIP
+  selector:
+    app: units-api
+  ports:
+  - port: 80
+    targetPort: 8080 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service
+spec:
+  clusterIP: None    # Headless service for the Replica Set
+  selector:
+    app: mongodb
+  ports:
+  - port: 27017
+    targetPort: 27017

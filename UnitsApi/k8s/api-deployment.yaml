@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: units-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: units-api
+  template:
+    metadata:
+      labels:
+        app: units-api
+    spec:
+      containers:
+      - name: units-api
+        image: docker.io/mohamedhamdy120/units-api:v10
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 8080
+
+        resources:
+          requests:
+            cpu: "100m"
+          limits:
+            cpu: "500m"
+
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+
+        - name: MONGO_CONNECTION_STRING
+          value: "mongodb://root:password123@mongodb-service:27017/unitsdb?authSource=admin&replicaSet=rs0"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: units-api-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: units-api

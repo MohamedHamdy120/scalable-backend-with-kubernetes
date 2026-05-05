@@ -1,0 +1,121 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongodb-init-script
+data:
+  init.sh: |
+    #!/bin/bash
+    set -e
+
+    POD_ORDINAL=${HOSTNAME##*-}
+    HEADLESS_SERVICE="mongodb-service"
+    NAMESPACE=${NAMESPACE:-default}
+    PRIMARY_FQDN="mongodb-0.${HEADLESS_SERVICE}.${NAMESPACE}.svc.cluster.local"
+    MY_FQDN="${HOSTNAME}.${HEADLESS_SERVICE}.${NAMESPACE}.svc.cluster.local"
+
+    export MONGODB_ADVERTISED_HOSTNAME="${MY_FQDN}"
+    export MONGODB_REPLICA_SET_NAME="rs0"
+    export MONGODB_REPLICA_SET_KEY="${MONGODB_REPLICA_SET_KEY}"
+
+    if [[ "$POD_ORDINAL" == "0" ]]; then
+      echo ">>> This is PRIMARY node"
+      export MONGODB_REPLICA_SET_MODE="primary"
+      export MONGODB_ROOT_PASSWORD="${MONGODB_ROOT_PASSWORD}"
+      # Remove any secondary-specific env
+      unset MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD
+    else
+      echo ">>> This is SECONDARY node, joining primary at ${PRIMARY_FQDN}"
+      export MONGODB_REPLICA_SET_MODE="secondary"
+      export MONGODB_PRIMARY_HOST="${PRIMARY_FQDN}"
+      # Secondary needs the primary's root password via this variable
+      export MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD="${MONGODB_ROOT_PASSWORD}"
+      # Unset the one that causes the error
+      unset MONGODB_ROOT_PASSWORD
+    fi
+
+    exec /opt/bitnami/scripts/mongodb/entrypoint.sh /opt/bitnami/scripts/mongodb/run.sh
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service
+spec:
+  clusterIP: None
+  selector:
+    app: mongodb
+  ports:
+    - name: mongo
+      port: 27017
+      targetPort: 27017
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+spec:
+  serviceName: mongodb-service
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      securityContext:
+        fsGroup: 1001
+      containers:
+      - name: mongodb
+        image: bitnami/mongodb:latest
+        securityContext:
+          runAsUser: 1001
+          allowPrivilegeEscalation: false
+        ports:
+        - containerPort: 27017
+        env:
+        - name: MONGODB_ROOT_PASSWORD
+          value: "password123"          
+        - name: MONGODB_REPLICA_SET_KEY
+          value: "vMTsD8GpINcd8Q=="
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        command:
+        - /bin/bash
+        - -c
+        - /scripts/init.sh
+        volumeMounts:
+        - name: mongodb-init-script
+          mountPath: /scripts
+        - name: mongodb-data
+          mountPath: /bitnami/mongodb
+        readinessProbe:
+          tcpSocket:
+            port: 27017
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 27017
+          initialDelaySeconds: 30
+          periodSeconds: 20
+      volumes:
+      - name: mongodb-init-script
+        configMap:
+          name: mongodb-init-script
+          defaultMode: 0755
+  volumeClaimTemplates:
+  - metadata:
+      name: mongodb-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: managed-csi  
+      resources:
+        requests:
+          storage: 5Gi
