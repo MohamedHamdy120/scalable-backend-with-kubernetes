@@ -12,10 +12,12 @@ az login
 az aks get-credentials --resource-group <ResourceGroupName> --name <ClusterName> --overwrite-existing
 
 ### Infrastructure Deployment
-kubectl apply -f mongodb-deployment.yaml
-kubectl apply -f units-api-deployment.yaml
-kubectl apply -f units-api-service.yaml
-kubectl apply -f api-ingress.yaml
+
+```bash
+kubectl apply -f mongodb.yaml
+kubectl apply -f api-deployment.yaml
+kubectl apply -f service.yaml
+kubectl apply -f ingress.yaml
 
 ### Scaling Configuration
 kubectl autoscale deployment units-api --cpu-percent=50 --min=1 --max=10
