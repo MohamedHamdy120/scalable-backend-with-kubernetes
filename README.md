@@ -43,14 +43,31 @@ kubectl autoscale deployment units-api --cpu-percent=50 --min=1 --max=10
 
 ---
 
-## API Endpoints  
+## API Endpoints
+
 **Public IP:** `104.44.176.111`
 
-- `/swagger/index.html` (GET) – Swagger UI  
-- `/weatherforecast` (GET) – Used for load testing and HPA validation  
-- `/health` (GET) – Health check endpoint  
-- `/` (GET) – Root endpoint  
+- `/swagger/index.html` (GET) – Swagger UI
 
+- `/weatherforecast` (GET) – Used for load testing and HPA validation
+
+- `/health` (GET) – Health check endpoint
+
+- `/` (GET) – Root endpoint
+
+---
+
+### Posts API
+
+- `/posts` (GET) – Retrieve all posts
+
+- `/posts` (POST) – Create a new post
+
+- `/posts/{id}` (GET) – Retrieve a post by ID
+
+- `/posts/{id}` (PUT) – Update a post
+
+- `/posts/{id}` (DELETE) – Delete a post
 ---
 
 ## System Monitoring
