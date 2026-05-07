@@ -1,4 +1,5 @@
 using UnitsApi.Services;
+using UnitsApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,17 @@ app.MapGet("/weatherforecast", () =>
 app.MapGet("/", () => Results.Ok("Units API is running"));
 
 app.MapGet("/health", () => Results.Ok("OK"));
+
+app.MapGet("/posts", async (PostService service) =>
+{
+    return await service.GetPost();
+});
+
+app.MapPost("/posts", async (Post post, PostService service) =>
+{
+    await service.CreatePost(post);
+    return Results.Ok(post);
+});
 
 app.Run();
 
