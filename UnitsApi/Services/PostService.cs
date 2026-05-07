@@ -1,6 +1,5 @@
 using MongoDB.Driver;
 using UnitsApi.Models;
-
 namespace UnitsApi.Services;
 
 public class PostService

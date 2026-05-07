@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: units-api
-        image: docker.io/mohamedhamdy120/units-api:v8
+        image: docker.io/mohamedhamdy120/units-api:v11
         imagePullPolicy: Always
 
         ports:
