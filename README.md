@@ -38,7 +38,7 @@ kubectl apply -f ingress.yaml
 Enable horizontal pod autoscaling:
 
 ```bash
-kubectl autoscale deployment units-api --cpu-percent=50 --min=1 --max=10
+kubectl autoscale deployment units-api --cpu-percent=70 --min=1 --max=5
 ```
 
 ---
